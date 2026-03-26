@@ -1,0 +1,19 @@
+# Web App & Visualization
+streamlit>=1.30.0
+plotly>=5.18.0
+
+# Data Manipulation & Machine Learning
+pandas>=2.0.0
+numpy>=2.0.0
+scikit-learn>=1.6.0
+
+# Deep Learning (LSTM)
+torch>=2.0.0
+
+# Natural Language Processing (Sentiment)
+transformers>=4.37.0
+
+# RAG & Local LLM Integration (LlamaIndex + Ollama)
+llama-index>=0.10.0
+llama-index-llms-ollama>=0.1.2
+llama-index-embeddings-huggingface>=0.1.4
