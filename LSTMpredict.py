@@ -7,15 +7,11 @@ from torch.utils.data import DataLoader, TensorDataset
 from sklearn.preprocessing import StandardScaler
 import matplotlib.pyplot as plt
 
-# --- Advanced AI/ML Imports ---
 from transformers import pipeline
 from llama_index.core import Document, VectorStoreIndex
-from langchain.tools import Tool
-from langchain.agents import initialize_agent, AgentType
+from langchain.tools import tool
+from langchain.agents import create_agent
 
-# ==========================================
-# 1. DATA PREPARATION (Technical Indicators)
-# ==========================================
 script_dir = os.path.dirname(os.path.abspath(__file__)) if '__file__' in locals() else os.getcwd()
 file_name = 'nasdaq_historical_data.csv'
 file_path = os.path.join(script_dir, file_name)
@@ -54,9 +50,6 @@ start_test, end_test = '2025-10-28', '2026-03-24'
 data_train = data.loc[start_train:end_train]
 data_test = data.loc[start_test:end_test]
 
-# ==========================================
-# 2. PYTORCH LSTM MODEL (Technical Predictor)
-# ==========================================
 class NasdaqLSTM(nn.Module):
     def __init__(self, input_size, hidden_size=64, num_layers=2):
         super(NasdaqLSTM, self).__init__()
@@ -117,16 +110,9 @@ with torch.no_grad():
     lstm_predictions_scaled = lstm_model(X_test_t).numpy()
 lstm_predictions = scaler_y.inverse_transform(lstm_predictions_scaled).flatten()
 
-# ==========================================
-# 3. LLAMA-INDEX RAG & HUGGINGFACE SENTIMENT
-# ==========================================
 print("Initializing RAG and Sentiment Pipelines...")
 
-# Hugging Face FinBERT for financial sentiment
-# (Using default distilbert here for speed without downloading massive weights, 
-# but in production, replace with "ProsusAI/finbert")
-sentiment_analyzer = pipeline("sentiment-analysis", model="distilbase/sst2") 
-
+sentiment_analyzer = pipeline("sentiment-analysis", model="distilbert-base-uncased-finetuned-sst-2-english")
 # Mock RAG Database (SEC filings and News)
 mock_news_data = [
     Document(text="Federal reserve indicates potential rate cuts, markets optimistic."),
@@ -149,22 +135,8 @@ def get_fundamental_sentiment(date_str):
     multiplier = 1.01 if sentiment['label'] == 'POSITIVE' else 0.99
     return multiplier
 
-# ==========================================
-# 4. LANGCHAIN AGENTIC ORCHESTRATOR
-# ==========================================
-# Instead of burning OpenAI tokens, we implement the Agent's *Logic* here:
-# "Decides whether to prioritize technical indicators (ML) or fundamental news (RAG) based on market conditions."
-
 def agentic_orchestrator(date, technical_pred, current_volatility, baseline_volatility):
-    """
-    Simulates Langchain Agent Routing:
-    If market volatility is exceptionally high, technicals fail. The agent routes 
-    to RAG/Fundamental Sentiment to adjust the prediction.
-    """
-    # Tool 1: LSTM Predictor (Already executed: technical_pred)
-    # Tool 2: RAG Sentiment Analyzer
-    
-    # Market Condition Logic:
+
     is_high_volatility = current_volatility > (baseline_volatility * 1.5)
     
     if is_high_volatility:
@@ -179,9 +151,7 @@ def agentic_orchestrator(date, technical_pred, current_volatility, baseline_vola
         
     return final_prediction, action_taken
 
-# ==========================================
-# 5. EXECUTE PIPELINE ON TEST DATA
-# ==========================================
+
 print("Running Agentic Orchestration on Test Data...")
 final_predictions = []
 actions = []
@@ -202,14 +172,11 @@ for i in range(len(lstm_predictions)):
     final_predictions.append(final_pred)
     actions.append(action)
 
-# ==========================================
-# 6. VISUALIZATION
-# ==========================================
+
 plt.figure(figsize=(12, 6))
 plt.rc('xtick', labelsize=10)
 plt.rc('ytick', labelsize=10)
 
-# True values (trimming the first `seq_length` to match predictions)
 y_test_plot = y_test_df.values[seq_length:]
 
 plt.plot(test_dates, y_test_plot, c='black', label='Ground Truth', linewidth=2)
