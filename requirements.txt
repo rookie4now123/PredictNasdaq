@@ -1,7 +1,7 @@
 # Web App & Visualization
 streamlit>=1.30.0
 plotly>=5.18.0
-
+yfinance
 # Data Manipulation & Machine Learning
 pandas>=2.0.0
 numpy>=2.0.0
@@ -19,3 +19,8 @@ llama-index-llms-ollama>=0.1.2
 llama-index-embeddings-huggingface>=0.1.4
 langchain
 llama-index-core
+llama-index-llms-google-genai
+langchain
+langchain-community
+langchain-core
+langchain-google-genai

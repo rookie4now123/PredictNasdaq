@@ -1,2 +1,4 @@
 predictnasdaq.py
 downloaddata.py
+LSTMpredict.py
+nasdaq_historical_data.csv
